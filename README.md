@@ -1,17 +1,47 @@
-# AI上下文画布
+# AI Context Canvas
 
-一个轻量级的无限画布应用，用于整理和管理AI对话所需的上下文资料。
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Fengsha5201314/AI_Context-canvas)
+[![GitHub](https://img.shields.io/github/license/Fengsha5201314/AI_Context-canvas)](https://github.com/Fengsha5201314/AI_Context-canvas/blob/main/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/Fengsha5201314/AI_Context-canvas)](https://github.com/Fengsha5201314/AI_Context-canvas/stargazers)
+
+一个轻量级的AI驱动内容整理画布，支持文字和图片的快速粘贴、拖拽排序、AI智能总结和多格式导出。
+
+## 🌟 在线体验
+
+**立即访问**: [https://ai-context-canvas.vercel.app](https://ai-context-canvas.vercel.app) *(部署后更新此链接)*
+
+无需安装，打开即用！
 
 ## ✨ 核心功能
 
 - 📋 **快速粘贴**: 支持文字和图片的快速粘贴
-- 🎨 **无限画布**: 自由拖动和排列内容
+- 🎨 **网格布局**: 卡片式网格布局，清晰直观
+- 🔄 **拖拽排序**: 自由拖拽调整内容顺序
 - 📦 **自动保存**: 数据自动保存到本地，刷新不丢失
 - 📄 **多格式导出**: 支持PDF和Word格式导出
-- 🤖 **AI集成**: 支持Google Gemini、硅基流动、阿里云百炼
+- 🤖 **AI智能总结**: 支持Google Gemini、硅基流动、阿里云百炼
+- 🔄 **流式输出**: AI结果实时流式显示
+- ⏰ **时间管理**: 支持时间戳编辑和按时间排序
 - ⌨️ **快捷键**: 完整的快捷键支持，提高效率
 
-## 🚀 快速开始
+## 🚀 一键部署
+
+### 部署到Vercel(推荐)
+
+点击按钮一键部署:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Fengsha5201314/AI_Context-canvas)
+
+**优势**:
+- ✅ 国内可直接访问
+- ✅ 完全免费
+- ✅ 无需备案
+- ✅ 自动HTTPS
+- ✅ 全球CDN加速
+
+详细部署指南: [VERCEL_DEPLOY.md](./VERCEL_DEPLOY.md)
+
+## 🚀 本地开发
 
 ### 安装依赖
 ```bash
@@ -34,9 +64,10 @@ npm run build
 
 ### 基础操作
 1. **粘贴内容**: 点击画布 → 按 `Ctrl+V`
-2. **拖动内容**: 直接拖动内容块
-3. **移动画布**: 按住 `空格键` + 拖动
-4. **缩放画布**: 按住 `Alt键` + 滚轮
+2. **拖动排序**: 拖动卡片标题栏进行排序
+3. **编辑时间**: 点击时间戳可编辑
+4. **双击预览**: 双击卡片查看完整内容
+5. **AI总结**: 点击"AI提取总结"按钮
 
 ### ⚠️ 重要：剪贴板权限设置
 
@@ -66,46 +97,50 @@ npm run build
 
 ## 🎯 使用场景
 
-1. **AI对话准备**: 整理多张截图和文字，导出PDF发送给AI
-2. **学习笔记**: 收集和整理学习资料
+1. **AI对话准备**: 整理多张截图和文字，AI智能总结后使用
+2. **学习笔记**: 收集和整理学习资料，按时间排序
 3. **资料收集**: 从多个来源收集内容，统一管理
-4. **会议记录**: 实时记录会议要点和白板内容
+4. **会议记录**: 实时记录会议要点，导出PDF分享
 
 ## 🛠️ 技术栈
 
 - **框架**: React 18 + TypeScript
 - **状态管理**: Zustand
 - **画布渲染**: React Konva
+- **拖拽排序**: @dnd-kit
 - **样式**: TailwindCSS
 - **构建工具**: Vite
 - **数据存储**: IndexedDB (localforage)
 - **导出功能**: jsPDF + docx
-- **AI集成**: Google Generative AI SDK
+- **AI集成**: Google Generative AI SDK + 硅基流动 + 阿里云百炼
 
 ## 📋 快捷键
 
 | 功能 | 快捷键 |
 |------|--------|
 | 粘贴 | Ctrl+V |
-| 复制 | Ctrl+C |
-| 剪切 | Ctrl+X |
-| 撤销 | Ctrl+Z |
-| 重做 | Ctrl+Y |
 | 删除 | Delete |
-| 移动画布 | Space+拖动 |
-| 缩放画布 | Alt+滚轮 |
+| 双击预览 | 双击卡片 |
+| 编辑时间 | 点击时间戳 |
 
-## 🔧 开发
+## 🔧 开发与部署
 
-### 运行测试
+### 本地开发
 ```bash
-npm test
+npm install
+npm run dev
 ```
 
-### 代码检查
+### 构建生产版本
 ```bash
 npm run build
 ```
+
+### 部署到Vercel
+详见 [VERCEL_DEPLOY.md](./VERCEL_DEPLOY.md)
+
+### 部署到其他平台
+详见 [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
 
 ## 📝 项目结构
 
