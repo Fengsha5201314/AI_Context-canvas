@@ -1,0 +1,46 @@
+{
+  "name": "ai-context-canvas",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@google/generative-ai": "^0.21.0",
+    "docx": "^8.5.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.1",
+    "konva": "^9.3.6",
+    "localforage": "^1.10.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-konva": "^18.2.10",
+    "use-image": "^1.1.4",
+    "zustand": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "@vitest/ui": "^1.3.1",
+    "autoprefixer": "^10.4.17",
+    "fast-check": "^3.15.1",
+    "jsdom": "^27.0.1",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.5.3",
+    "vite": "^5.4.1",
+    "vitest": "^1.3.1"
+  }
+}
