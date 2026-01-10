@@ -8,13 +8,23 @@ interface ToolbarProps {
 }
 
 function Toolbar({ onExportPDF, onExportWord, onAISummarize, onOpenSettings }: ToolbarProps) {
-  const { canvas, clearCanvas, showGrid, setShowGrid, autoLayout } = useAppStore();
+  const { canvas, clearCanvas, showGrid, setShowGrid, autoLayout, autoCapture, setAutoCapture, selectAll, copySelectedBlocks } = useAppStore();
   const canExport = canvas.blocks.length > 0;
+  const hasSelection = canvas.selectedIds.length > 0;
 
   const handleClearCanvas = () => {
     if (window.confirm('确定要清空画布吗？此操作无法撤销。')) {
       clearCanvas();
     }
+  };
+
+  const handleCopy = async () => {
+    await copySelectedBlocks();
+    alert(`已复制 ${canvas.selectedIds.length} 个卡片到剪贴板`);
+  };
+
+  const handleSelectAll = () => {
+    selectAll();
   };
 
   return (
@@ -31,9 +41,46 @@ function Toolbar({ onExportPDF, onExportWord, onAISummarize, onOpenSettings }: T
           />
           <span>显示网格</span>
         </label>
+
+        <label className="flex items-center space-x-2 text-sm text-gray-600 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={autoCapture}
+            onChange={(e) => setAutoCapture(e.target.checked)}
+            className="rounded"
+          />
+          <span className="flex items-center">
+            自动捕获剪贴板
+            {autoCapture && (
+              <span className="ml-1 w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            )}
+          </span>
+        </label>
+
+        {hasSelection && (
+          <span className="text-sm text-blue-600 font-medium">
+            已选中 {canvas.selectedIds.length} 个
+          </span>
+        )}
       </div>
       
       <div className="flex items-center space-x-2">
+        <button
+          onClick={handleSelectAll}
+          disabled={!canExport}
+          className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+        >
+          全选
+        </button>
+
+        <button
+          onClick={handleCopy}
+          disabled={!hasSelection}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+        >
+          复制选中
+        </button>
+
         <button
           onClick={autoLayout}
           disabled={!canExport}

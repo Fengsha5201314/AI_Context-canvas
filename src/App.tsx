@@ -7,6 +7,7 @@ import { readFromClipboard, handleFileDrop } from './utils/clipboard';
 import { ExportService } from './services/exportService';
 import { AIService } from './services/aiService';
 import { StorageService } from './services/storageService';
+import { useClipboardMonitor } from './hooks/useClipboardMonitor';
 import type { ContentBlock } from './types/canvas';
 
 function App() {
@@ -20,6 +21,9 @@ function App() {
   
   // 预览模态框状态
   const [previewBlock, setPreviewBlock] = useState<ContentBlock | null>(null);
+
+  // 启用剪贴板监听
+  useClipboardMonitor();
 
   // 初始化：从localStorage加载数据
   useEffect(() => {
@@ -41,6 +45,12 @@ function App() {
         const savedAIResult = localStorage.getItem('ai_result');
         if (savedAIResult) {
           setAiResult(savedAIResult);
+        }
+
+        // 加载自动捕获设置
+        const savedAutoCapture = localStorage.getItem('autoCapture');
+        if (savedAutoCapture) {
+          useAppStore.setState({ autoCapture: JSON.parse(savedAutoCapture) });
         }
       } catch (error) {
         console.error('加载数据失败:', error);

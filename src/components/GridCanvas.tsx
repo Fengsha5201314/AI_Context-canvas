@@ -15,11 +15,13 @@ interface GridCanvasProps {
 }
 
 // 可排序的内容卡片组件
-function SortableCard({ block, index, onDoubleClick, onTimeEdit }: { 
+function SortableCard({ block, index, isSelected, onDoubleClick, onTimeEdit, onToggleSelect }: { 
   block: ContentBlock; 
-  index: number; 
+  index: number;
+  isSelected: boolean;
   onDoubleClick?: (block: ContentBlock) => void;
   onTimeEdit?: (blockId: string, newTime: number) => void;
+  onToggleSelect?: (blockId: string, ctrlKey: boolean) => void;
 }) {
   const {
     attributes,
@@ -78,7 +80,10 @@ function SortableCard({ block, index, onDoubleClick, onTimeEdit }: {
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+      className={`bg-white rounded-lg shadow-sm border-2 overflow-hidden hover:shadow-md transition-all ${
+        isSelected ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200'
+      }`}
+      onClick={(e) => onToggleSelect?.(block.id, e.ctrlKey || e.metaKey)}
     >
       {/* 序号拖动手柄 */}
       <div
@@ -166,14 +171,33 @@ function SortableCard({ block, index, onDoubleClick, onTimeEdit }: {
 }
 
 const GridCanvas = forwardRef<GridCanvasRef, GridCanvasProps>(({ onBlockDoubleClick }, ref) => {
-  const { canvas, reorderBlocks, updateBlock } = useAppStore();
-  const { blocks } = canvas;
+  const { canvas, reorderBlocks, updateBlock, selectBlocks, toggleSelection, selectAll, copySelectedBlocks } = useAppStore();
+  const { blocks, selectedIds } = canvas;
   const [items, setItems] = useState(blocks);
 
   // 同步blocks到items
   useEffect(() => {
     setItems(blocks);
   }, [blocks]);
+
+  // 键盘事件监听
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+A: 全选
+      if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+        e.preventDefault();
+        selectAll();
+      }
+      // Ctrl+C: 复制
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c' && selectedIds.length > 0) {
+        e.preventDefault();
+        copySelectedBlocks();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectAll, copySelectedBlocks, selectedIds]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -202,6 +226,17 @@ const GridCanvas = forwardRef<GridCanvasRef, GridCanvasProps>(({ onBlockDoubleCl
   // 处理时间编辑
   const handleTimeEdit = (blockId: string, newTime: number) => {
     updateBlock(blockId, { createdAt: newTime });
+  };
+
+  // 处理选中切换
+  const handleToggleSelect = (blockId: string, ctrlKey: boolean) => {
+    if (ctrlKey) {
+      // Ctrl+点击：切换选中状态
+      toggleSelection(blockId);
+    } else {
+      // 普通点击：单选
+      selectBlocks([blockId]);
+    }
   };
 
   // 暴露导出方法
@@ -236,8 +271,10 @@ const GridCanvas = forwardRef<GridCanvasRef, GridCanvasProps>(({ onBlockDoubleCl
               key={block.id}
               block={block}
               index={index}
+              isSelected={selectedIds.includes(block.id)}
               onDoubleClick={onBlockDoubleClick}
               onTimeEdit={handleTimeEdit}
+              onToggleSelect={handleToggleSelect}
             />
           ))}
         </div>

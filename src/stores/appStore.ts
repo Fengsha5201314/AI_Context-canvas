@@ -9,6 +9,10 @@ interface AppStore {
   showGrid: boolean;
   setShowGrid: (show: boolean) => void;
   
+  // 自动捕获剪贴板
+  autoCapture: boolean;
+  setAutoCapture: (enabled: boolean) => void;
+  
   // 点击位置（用于粘贴）
   clickPosition: Position | null;
   setClickPosition: (pos: Position | null) => void;
@@ -18,6 +22,8 @@ interface AppStore {
   updateBlock: (id: string, updates: Partial<ContentBlock>) => void;
   deleteBlocks: (ids: string[]) => void;
   selectBlocks: (ids: string[]) => void;
+  toggleSelection: (id: string) => void;
+  selectAll: () => void;
   moveBlocks: (ids: string[], delta: Position) => void;
   clearCanvas: () => void;
   autoLayout: () => void;
@@ -36,6 +42,7 @@ interface AppStore {
   copy: () => void;
   cut: () => void;
   paste: () => void;
+  copySelectedBlocks: () => Promise<void>;
   
   // AI配置
   aiConfig: AIConfig;
@@ -81,9 +88,15 @@ export const useAppStore = create<AppStore>((set, get) => ({
   aiConfig: initialAIConfig,
   showGrid: true,
   clickPosition: null,
+  autoCapture: false,
 
   setShowGrid: (show) => set({ showGrid: show }),
   setClickPosition: (pos) => set({ clickPosition: pos }),
+  setAutoCapture: (enabled) => {
+    set({ autoCapture: enabled });
+    // 保存到 localStorage
+    localStorage.setItem('autoCapture', JSON.stringify(enabled));
+  },
 
   // 添加内容块
   addBlock: (block) => {
@@ -143,6 +156,32 @@ export const useAppStore = create<AppStore>((set, get) => ({
       canvas: {
         ...state.canvas,
         selectedIds: ids,
+      },
+    }));
+  },
+
+  // 切换选中状态（用于 Ctrl+点击）
+  toggleSelection: (id) => {
+    set((state) => {
+      const isSelected = state.canvas.selectedIds.includes(id);
+      const newSelectedIds = isSelected
+        ? state.canvas.selectedIds.filter((selectedId) => selectedId !== id)
+        : [...state.canvas.selectedIds, id];
+      return {
+        canvas: {
+          ...state.canvas,
+          selectedIds: newSelectedIds,
+        },
+      };
+    });
+  },
+
+  // 全选
+  selectAll: () => {
+    set((state) => ({
+      canvas: {
+        ...state.canvas,
+        selectedIds: state.canvas.blocks.map((block) => block.id),
       },
     }));
   },
@@ -316,6 +355,84 @@ export const useAppStore = create<AppStore>((set, get) => ({
         updatedAt: Date.now(),
       };
       state.addBlock(newBlock);
+    }
+  },
+
+  // 复制选中的卡片到系统剪贴板
+  copySelectedBlocks: async () => {
+    const state = get();
+    const selectedBlocks = state.canvas.blocks.filter((block) =>
+      state.canvas.selectedIds.includes(block.id)
+    );
+
+    if (selectedBlocks.length === 0) return;
+
+    try {
+      // 准备复制内容
+      const textContent: string[] = [];
+      const htmlContent: string[] = [];
+      const images: Blob[] = [];
+
+      for (const block of selectedBlocks) {
+        if (block.type === 'text') {
+          textContent.push(block.content);
+          htmlContent.push(`<p>${block.content}</p>`);
+        } else if (block.type === 'image' && block.imageData) {
+          // 将 base64 图片转换为 Blob
+          const response = await fetch(block.imageData);
+          const blob = await response.blob();
+          images.push(blob);
+          htmlContent.push(`<img src="${block.imageData}" alt="图片" />`);
+        }
+      }
+
+      // 构建剪贴板数据
+      const clipboardItems: Record<string, Blob> = {};
+
+      // 添加纯文本
+      if (textContent.length > 0) {
+        clipboardItems['text/plain'] = new Blob([textContent.join('\n\n')], {
+          type: 'text/plain',
+        });
+      }
+
+      // 添加 HTML
+      if (htmlContent.length > 0) {
+        clipboardItems['text/html'] = new Blob([htmlContent.join('\n')], {
+          type: 'text/html',
+        });
+      }
+
+      // 如果只有一张图片，直接复制图片
+      if (images.length === 1 && textContent.length === 0) {
+        clipboardItems['image/png'] = images[0];
+      }
+
+      // 写入剪贴板
+      await navigator.clipboard.write([new ClipboardItem(clipboardItems)]);
+
+      console.log(`已复制 ${selectedBlocks.length} 个卡片到剪贴板`);
+    } catch (error) {
+      console.error('复制失败:', error);
+      // 降级方案：使用 execCommand
+      try {
+        const textContent = selectedBlocks
+          .map((block) => (block.type === 'text' ? block.content : '[图片]'))
+          .join('\n\n');
+        
+        const textarea = document.createElement('textarea');
+        textarea.value = textContent;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        
+        console.log('使用降级方案复制成功');
+      } catch (fallbackError) {
+        console.error('降级方案也失败了:', fallbackError);
+      }
     }
   },
 
